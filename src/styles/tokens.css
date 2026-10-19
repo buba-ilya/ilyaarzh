@@ -1,0 +1,63 @@
+:root {
+  --font-main: 'Figtree', 'Helvetica Neue', Arial, sans-serif;
+  --bg: #000;
+  --text: #dedede;
+  --link: #fff;
+  --link-hover: #dedede;
+  --title-color: #fff;
+
+  --site-title-size: 1.6rem;
+  --site-title-lh: 1.3;
+  --site-subtitle-size: 1.2rem;
+  --menu-size: 1.5rem;
+  --menu-lh: 1.3;
+  --menu-gap: 3.53rem;
+
+  --h1-size: 2.4rem;
+  --h1-weight: 300;
+  --h1-lh: 1.75;
+
+  --copy-size: 1.2rem;
+  --copy-lh: 1.5;
+  --copy-ls: 0.5px;
+
+  --overlay-bg: rgba(0, 0, 0, 0.85);
+  --overlay-size: 1.2rem;
+  --overlay-lh: 1.58;
+  --overlay-fade: 0.25s ease-in-out;
+
+  --gutter: 3px;
+  --side-pad: 3.2rem;
+
+  --lightbox-bg: rgba(0, 0, 0, 0.9);
+  --lightbox-icon: #dedede;
+
+  --placeholder-bg: #fff;
+  --placeholder-text: #000;
+}
+
+/* 62.5% of the 16px default == 10px, so 1rem = 10px as in the reference,
+   but the scale still follows the reader's own font-size setting. */
+html {
+  font-size: 62.5%;
+  background: var(--bg);
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-main);
+  font-size: 1rem;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--link);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+a:hover {
+  color: var(--link-hover);
+}

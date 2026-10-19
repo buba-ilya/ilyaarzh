@@ -1,0 +1,68 @@
+---
+import '@fontsource/figtree/300.css';
+import '@fontsource/figtree/400.css';
+import '@fontsource/figtree/700.css';
+import '../styles/global.css';
+
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../config/site';
+
+interface Props {
+  /** Page name, e.g. "ABOUT". Omit on the home page. */
+  title?: string;
+  description?: string;
+  ogImage?: string;
+}
+
+const { title, description = site.description, ogImage } = Astro.props;
+
+const documentTitle = title ? `${title} - ${site.name}` : site.name;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? site.url).href;
+const ogImageUrl = new URL(ogImage || '/og-default.jpg', Astro.site ?? site.url).href;
+const umamiId = site.analytics.umamiWebsiteId.trim();
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="color-scheme" content="dark" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="canonical" href={canonical} />
+
+    <title>{documentTitle}</title>
+    {description && <meta name="description" content={description} />}
+
+    <meta property="og:title" content={documentTitle} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:image" content={ogImageUrl} />
+    {description && <meta property="og:description" content={description} />}
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={documentTitle} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    {umamiId && (
+      <script
+        is:inline
+        defer
+        src="https://cloud.umami.is/script.js"
+        data-website-id={umamiId}
+      ></script>
+    )}
+  </head>
+
+  <body>
+    <Header />
+    <main>
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

@@ -1,0 +1,180 @@
+---
+import { site } from '../config/site';
+
+interface Props {
+  /** Which nav href should be marked as the current page. */
+  current?: string;
+}
+
+const { current = Astro.url.pathname } = Astro.props;
+
+const isCurrent = (href: string) =>
+  href === '/' ? current === '/' || current.startsWith('/portfolio') : current.startsWith(href);
+---
+
+<header>
+  <div class="header-inner capped-flush">
+    <a class="brand" href="/">
+      <span class="brand-name">{site.name}</span>
+      <span class="brand-role">{site.role}</span>
+    </a>
+
+    <nav aria-label="Main">
+      <ul class="menu">
+        {site.nav.map((item) => (
+          <li class:list={['menu-item', item.children?.length && 'has-children']}>
+            <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>
+              {item.label}
+            </a>
+
+            {item.children && item.children.length > 0 && (
+              <div class="sub-menu">
+                <ul>
+                  {item.children.map((child) => (
+                    <li>
+                      <a href={child.href}>{child.label}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<style>
+  header {
+    position: relative;
+    z-index: 200;
+    background: #000;
+  }
+
+  .header-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .brand {
+    padding: 3.2rem;
+    color: #fff;
+  }
+
+  .brand:hover {
+    color: #fff;
+  }
+
+  .brand-name,
+  .brand-role {
+    display: block;
+  }
+
+  .brand-name {
+    font-size: var(--site-title-size);
+    line-height: var(--site-title-lh);
+    font-weight: 400;
+  }
+
+  .brand-role {
+    font-size: var(--site-subtitle-size);
+  }
+
+  .menu {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 3.2rem 3.2rem 3.2rem 0;
+  }
+
+  .menu-item {
+    position: relative;
+    margin-left: var(--menu-gap);
+  }
+
+  .menu-item:first-child {
+    margin-left: 0;
+  }
+
+  .menu-item > a {
+    font-size: var(--menu-size);
+    line-height: var(--menu-lh);
+    color: #fff;
+  }
+
+  .menu-item > a:hover {
+    color: #dedede;
+  }
+
+  /* Dropdown: rendered only when a nav item declares children. */
+  .sub-menu {
+    display: none;
+  }
+
+  @media (min-width: 960px) {
+    .sub-menu {
+      display: block;
+      position: absolute;
+      top: 70%;
+      left: -3.2rem;
+      padding-top: 1.6rem;
+      opacity: 0;
+      visibility: hidden;
+      transition:
+        all 0.3s ease-in-out,
+        visibility 0s linear 0.3s;
+    }
+
+    .has-children:hover .sub-menu,
+    .has-children:focus-within .sub-menu {
+      top: 100%;
+      opacity: 1;
+      visibility: visible;
+      transition-delay: 0s;
+    }
+
+    .sub-menu ul {
+      position: relative;
+      list-style: none;
+      margin: 0;
+      padding: 1px 3.2rem;
+      background: #000;
+      white-space: nowrap;
+    }
+
+    .sub-menu ul::after {
+      content: '';
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-bottom-color: #000;
+    }
+
+    .sub-menu li {
+      padding: 1.2rem 0;
+    }
+
+    .sub-menu a {
+      font-size: var(--menu-size);
+      line-height: var(--menu-lh);
+    }
+  }
+
+  @media (max-width: 399px) {
+    .brand {
+      padding: 2rem;
+    }
+
+    .menu {
+      padding: 2rem 2rem 2rem 0;
+    }
+
+    .menu-item {
+      margin-left: 2rem;
+    }
+  }
+</style>

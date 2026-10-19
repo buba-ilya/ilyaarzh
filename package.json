@@ -1,0 +1,37 @@
+{
+  "name": "web_portfolio",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "test": "vitest run",
+    "og": "node scripts/generate-og.mjs",
+    "check": "astro check",
+    "format": "prettier --write .",
+    "stop": "astro dev stop",
+    "status": "astro dev status",
+    "logs": "astro dev logs"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.4",
+    "@fontsource/figtree": "^5.3.0",
+    "astro": "^7.3.2"
+  },
+  "allowScripts": {
+    "esbuild": true
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "prettier": "^3.9.7",
+    "prettier-plugin-astro": "^1.0.0",
+    "sharp": "^0.35.4",
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.1"
+  }
+}

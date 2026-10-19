@@ -1,0 +1,64 @@
+---
+import Media from './Media.astro';
+import { mediaHref } from '../lib/media';
+
+interface Props {
+  stills: string[];
+  title: string;
+}
+
+const { stills, title } = Astro.props;
+---
+
+<div class="stills-grid">
+  {stills.map((src, i) => (
+    <a
+      class="still has-overlay"
+      href={mediaHref(src)}
+      data-lightbox-index={i}
+      aria-label={`${title} — still ${i + 1}, open full screen`}
+    >
+      <Media
+        src={src}
+        alt={`${title} — still ${i + 1}`}
+        ratio="auto"
+        sizes="(min-width: 1200px) 17vw, (min-width: 992px) 25vw, 33vw"
+      />
+      <div class="overlay">
+        <strong>{title}</strong>
+      </div>
+    </a>
+  ))}
+</div>
+
+<style>
+  .stills-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3px;
+    /* Stills keep their own proportions, so rows must not stretch shorter frames. */
+    align-items: start;
+  }
+
+  .still {
+    display: block;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .overlay strong {
+    font-weight: 400;
+  }
+
+  @media (min-width: 992px) {
+    .stills-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .stills-grid {
+      grid-template-columns: repeat(6, 1fr);
+    }
+  }
+</style>

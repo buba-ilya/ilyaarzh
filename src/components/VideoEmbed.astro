@@ -1,0 +1,158 @@
+---
+import { parseVideo, getVideoThumbnail } from '../lib/video';
+import Media from './Media.astro';
+import MediaPlaceholder from './MediaPlaceholder.astro';
+
+interface Props {
+  url?: string;
+  cover?: string;
+  title?: string;
+  /** Loop playback — used for the showreel on ABOUT. */
+  loop?: boolean;
+  /** Shape of the player, e.g. '16/9'. Kinescope's embed snippet states it as padding-top. */
+  ratio?: string;
+  /** Play on page load instead of on click. Starts muted — browsers block sound without a click. */
+  autostart?: boolean;
+}
+
+const {
+  url,
+  cover,
+  title = 'video',
+  loop = false,
+  ratio = '16/9',
+  autostart = false,
+} = Astro.props;
+
+const parsed = parseVideo(url, { loop, muted: autostart });
+const coverSrc =
+  !autostart && parsed ? cover?.trim() || ((await getVideoThumbnail(url)) ?? '') : '';
+// Players narrower than 16:9 (4:3, square, vertical) are capped to the screen height,
+// otherwise a 9:16 clip at full page width is two screens tall. 16:9 keeps the full
+// width so it lines up with the stills grid below.
+const [a, b] = ratio.split('/').map(Number);
+const numericRatio = b ? a / b : a;
+const sizeStyle =
+  numericRatio < 16 / 9 - 0.01
+    ? `aspect-ratio:${ratio};width:min(100%, calc(85svh * ${ratio}))`
+    : `aspect-ratio:${ratio}`;
+const allow =
+  'autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer; clipboard-write; screen-wake-lock';
+---
+
+<div class="video" style={sizeStyle}>
+  {parsed && autostart ? (
+    <iframe src={parsed.embedUrl} title={title} allow={allow} allowfullscreen></iframe>
+  ) : parsed ? (
+    <button
+      class="video-cover"
+      data-embed={parsed.embedUrl}
+      data-title={title}
+      data-allow={allow}
+      type="button"
+      aria-label={`Play ${title}`}
+    >
+      {/* A playable video with no cover art stays black — SOON would claim the film
+          itself is missing, which it is not. */}
+      {coverSrc && <Media src={coverSrc} alt="" ratio={ratio} sizes="100vw" />}
+      <span class="play" aria-hidden="true">
+        Play
+      </span>
+    </button>
+  ) : (
+    <MediaPlaceholder ratio={ratio} />
+  )}
+</div>
+
+<style>
+  .video {
+    position: relative;
+    overflow: hidden;
+    /* iOS Safari ignores overflow:hidden on iframes until the box gets its own
+       compositing layer; the mask forces one, so the bleed below really is clipped. */
+    isolation: isolate;
+    transform: translateZ(0);
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+    margin-inline: auto;
+    background: #000;
+  }
+
+  .video-cover {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: #000;
+    cursor: pointer;
+  }
+
+  .video-cover :global(.media),
+  .video-cover :global(.ph) {
+    height: 100%;
+  }
+
+  .play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.85);
+    color: #000;
+    font-size: 1.1rem;
+    transition: transform 0.2s;
+  }
+
+  .video-cover:hover .play,
+  .video-cover:focus-visible .play {
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+
+  /* Our page is color-scheme: dark, the players are light; on that mismatch Safari
+     paints a white canvas under the iframe, which shows as a hairline wherever the
+     player's size lands on a fractional pixel. Matching the scheme removes the white
+     canvas; the 2px bleed hides any seam that is left. */
+  .video :global(iframe) {
+    position: absolute;
+    inset: -2px;
+    width: calc(100% + 4px);
+    max-width: none;
+    height: calc(100% + 4px);
+    border: 0;
+    color-scheme: normal;
+    background: #000;
+  }
+</style>
+
+<script>
+  const init = () => {
+    document.querySelectorAll<HTMLButtonElement>('.video-cover').forEach((button) => {
+      if (button.dataset.bound) return;
+      button.dataset.bound = 'true';
+
+      button.addEventListener('click', () => {
+        const wrapper = button.closest<HTMLElement>('.video');
+        const embed = button.dataset.embed;
+        if (!wrapper || !embed) return;
+
+        const iframe = document.createElement('iframe');
+        iframe.src = embed;
+        iframe.title = button.dataset.title || 'Video';
+        iframe.allow = button.dataset.allow ?? '';
+        iframe.allowFullscreen = true;
+
+        wrapper.replaceChildren(iframe);
+      });
+    });
+  };
+
+  init();
+  document.addEventListener('astro:page-load', init);
+</script>

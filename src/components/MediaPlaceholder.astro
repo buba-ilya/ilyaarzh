@@ -1,0 +1,37 @@
+---
+interface Props {
+  ratio?: string;
+  label?: string;
+  class?: string;
+}
+
+const { ratio = '16/9', label = 'SOON', class: className } = Astro.props;
+---
+
+<div
+  class:list={['ph', className]}
+  style={`aspect-ratio:${ratio}`}
+  role="img"
+  aria-label="Coming soon"
+>
+  <span>{label}</span>
+</div>
+
+<style>
+  .ph {
+    container-type: inline-size;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--placeholder-bg);
+    color: var(--placeholder-text);
+    user-select: none;
+  }
+
+  .ph span {
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    font-size: clamp(1.1rem, 2.2cqi, 2.4rem);
+  }
+</style>

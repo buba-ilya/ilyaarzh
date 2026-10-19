@@ -1,0 +1,131 @@
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+img,
+svg,
+iframe {
+  display: block;
+  max-width: 100%;
+}
+
+main {
+  display: block;
+}
+
+:focus-visible {
+  outline: 1px solid #fff;
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Shared page container: edge-to-edge on small screens, gutters from 960px,
+   extra outer margins on very wide screens. */
+/* No explicit width: a block box already fills the space left by its margins,
+   whereas width:100% would add the margins on top and overflow the viewport. */
+.capped {
+  margin-inline: 0;
+}
+
+@media (min-width: 960px) {
+  .capped {
+    padding-inline: var(--side-pad);
+  }
+}
+
+@media (min-width: 1376px) {
+  .capped {
+    margin-inline: 5%;
+  }
+}
+
+@media (min-width: 1920px) {
+  .capped {
+    margin-inline: 10%;
+  }
+}
+
+/* Same outer margins for the header, which keeps its own 3.2rem inner padding. */
+.capped-flush {
+  margin-inline: 0;
+}
+
+@media (min-width: 1376px) {
+  .capped-flush {
+    margin-inline: 5%;
+  }
+}
+
+@media (min-width: 1920px) {
+  .capped-flush {
+    margin-inline: 10%;
+  }
+}
+
+/* Overlay shared by project tiles and stills. */
+.overlay {
+  font-size: var(--overlay-size);
+  line-height: var(--overlay-lh);
+  font-weight: 400;
+  color: #fff;
+}
+
+@media (hover: hover) {
+  .overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 1.6rem;
+    background: var(--overlay-bg);
+    opacity: 0;
+    transition: opacity var(--overlay-fade);
+  }
+
+  .has-overlay:hover .overlay,
+  .has-overlay:focus-visible .overlay {
+    opacity: 1;
+  }
+}
+
+/* Touch screens have no hover to reveal the caption, so it is not shown at all —
+   the image's alt text still names the project for screen readers. */
+@media (hover: none) {
+  .overlay {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,38 @@
+---
+import Media from './Media.astro';
+
+interface Props {
+  slug: string;
+  title: string;
+  fullTitle?: string;
+  thumbnail?: string;
+  thumbnailPosition?: string;
+}
+
+const { slug, title, fullTitle, thumbnail, thumbnailPosition } = Astro.props;
+---
+
+<a class="tile has-overlay" href={`/portfolio/${slug}`}>
+  <Media
+    src={thumbnail}
+    alt={fullTitle ?? title}
+    ratio="16/9"
+    sizes="(min-width: 681px) 33vw, 50vw"
+    position={thumbnailPosition}
+  />
+  <div class="overlay">
+    <strong>{title}</strong>
+  </div>
+</a>
+
+<style>
+  .tile {
+    display: block;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .overlay strong {
+    font-weight: 400;
+  }
+</style>

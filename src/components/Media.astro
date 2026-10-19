@@ -1,0 +1,101 @@
+---
+import { Image } from 'astro:assets';
+import MediaPlaceholder from './MediaPlaceholder.astro';
+import { resolveAsset } from '../lib/media';
+
+interface Props {
+  src?: string;
+  alt: string;
+  /** Aspect ratio of the box, e.g. '16/9'. Use 'auto' to keep the file's own proportions. */
+  ratio?: string;
+  loading?: 'lazy' | 'eager';
+  class?: string;
+  sizes?: string;
+  /** Which part of the image survives the crop, e.g. 'center 75%'. CSS object-position. */
+  position?: string;
+}
+
+const {
+  src,
+  alt,
+  ratio = '16/9',
+  loading = 'lazy',
+  class: className,
+  sizes = '(min-width: 1200px) 33vw, (min-width: 681px) 50vw, 100vw',
+  position,
+} = Astro.props;
+
+const positionStyle = position ? `object-position:${position}` : undefined;
+
+const trimmed = src?.trim();
+const asset = resolveAsset(trimmed);
+
+// 'auto' lets the image set its own height; the placeholder still needs a concrete box.
+const isAuto = ratio === 'auto';
+---
+
+{!trimmed ? (
+  <MediaPlaceholder ratio={isAuto ? '16/9' : ratio} class={className} />
+) : (
+  <div
+    class:list={['media', isAuto && 'media-auto', className]}
+    style={isAuto ? undefined : `aspect-ratio:${ratio}`}
+  >
+    {asset ? (
+      <Image
+        src={asset}
+        alt={alt}
+        widths={[480, 720, 960, 1280, 1920]}
+        sizes={sizes}
+        loading={loading}
+        decoding="async"
+        style={positionStyle}
+      />
+    ) : (
+      <img src={trimmed} alt={alt} loading={loading} decoding="async" style={positionStyle} />
+    )}
+  </div>
+)}
+
+<style>
+  .media {
+    position: relative;
+    width: 100%;
+    background: #000;
+    overflow: hidden;
+  }
+
+  .media :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+  }
+
+  .media :global(img.is-loaded) {
+    opacity: 1;
+  }
+
+  /* Natural proportions: the width/height attributes astro:assets emits reserve
+     the right space, so nothing shifts while the file loads. */
+  .media-auto :global(img) {
+    height: auto;
+    object-fit: contain;
+  }
+</style>
+
+<script>
+  const reveal = (img: HTMLImageElement) => img.classList.add('is-loaded');
+
+  const init = () => {
+    document.querySelectorAll<HTMLImageElement>('.media img').forEach((img) => {
+      if (img.complete) reveal(img);
+      else img.addEventListener('load', () => reveal(img), { once: true });
+      img.addEventListener('error', () => reveal(img), { once: true });
+    });
+  };
+
+  init();
+  document.addEventListener('astro:page-load', init);
+</script>

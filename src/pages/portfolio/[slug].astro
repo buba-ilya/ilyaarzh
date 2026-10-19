@@ -1,0 +1,64 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import VideoEmbed from '../../components/VideoEmbed.astro';
+import StillsGrid from '../../components/StillsGrid.astro';
+import Lightbox from '../../components/Lightbox.astro';
+import ProjectInfo from '../../components/ProjectInfo.astro';
+import { getVideoThumbnail } from '../../lib/video';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects', ({ data }) => !data.draft);
+  return projects.map((project) => ({ params: { slug: project.id }, props: { project } }));
+}
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+}
+
+const { project } = Astro.props;
+const { title, fullTitle, videos, stills, thumbnail } = project.data;
+
+const { Content } = await render(project);
+const hasBody = (project.body ?? '').trim().length > 0;
+const heading = fullTitle ?? title;
+
+const shareImage = thumbnail?.trim() || ((await getVideoThumbnail(videos[0]?.url)) ?? '');
+---
+
+<BaseLayout title={title} ogImage={shareImage || undefined}>
+  <article class="capped">
+    {videos.map((video, i) => (
+      <div class:list={['video-block', i > 0 && 'stacked']}>
+        <VideoEmbed
+          url={video.url}
+          cover={video.cover}
+          title={video.title || heading}
+          ratio={video.ratio}
+        />
+      </div>
+    ))}
+
+    {stills.length > 0 && (
+      <div class="stills">
+        <StillsGrid stills={stills} title={title} />
+      </div>
+    )}
+
+    <ProjectInfo title={heading} hasBody={hasBody}>
+      <Content />
+    </ProjectInfo>
+  </article>
+
+  {stills.length > 0 && <Lightbox items={stills} title={title} />}
+</BaseLayout>
+
+<style>
+  .video-block.stacked {
+    margin-top: 3px;
+  }
+
+  .stills {
+    margin-top: 3px;
+  }
+</style>
