@@ -15,10 +15,10 @@ export interface Contact {
 }
 
 export const site = {
-  name: 'ILYA ARZH',
+  name: 'ILYA ARZHINOVSKY',
   role: 'CINEMATOGRAPHER',
-  url: 'https://ilyaarzh.netlify.app',
-  description: 'Ilya Arzhinovsky — cinematographer based in Moscow.',
+  url: 'https://ilyaarzhinovsky.com',
+  description: 'Ilya Arzhinovsky — cinematographer',
 
   nav: [
     { label: 'WORK', href: '/' },
