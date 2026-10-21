@@ -21,9 +21,9 @@ export const site = {
   description: 'Ilya Arzhinovsky — cinematographer',
 
   nav: [
-    { label: 'WORK', href: '/' },
-    { label: 'ABOUT', href: '/about' },
-    // Optional dropdown: { label: 'WORK', href: '/', children: [{ label: 'DIRECTED', href: '/directed' }] }
+    { label: 'WORK', href: '/work' },
+    { label: 'ABOUT', href: '/' },
+    // Optional dropdown: { label: 'WORK', href: '/work', children: [{ label: 'DIRECTED', href: '/directed' }] }
   ] as NavItem[],
 
   // An empty url hides the icon.

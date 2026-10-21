@@ -247,10 +247,10 @@ shot on 8mm film
 nav: [
   {
     label: 'WORK',
-    href: '/',
+    href: '/work',
     children: [{ label: 'DIRECTED', href: '/directed' }],
   },
-  { label: 'ABOUT', href: '/about' },
+  { label: 'ABOUT', href: '/' },
 ],
 ```
 
@@ -278,9 +278,9 @@ src/
   layouts/BaseLayout.astro  <head>, мета, Header, Footer
   lib/video.ts              парсер ссылок Vimeo/YouTube (+ тесты рядом)
   pages/
-    index.astro             WORK
+    index.astro             ABOUT (главная)
     portfolio/[slug].astro  страница проекта
-    about.astro             ABOUT
+    work.astro              WORK
     404.astro
 public/
   media/                    сюда можно класть файлы без обработки

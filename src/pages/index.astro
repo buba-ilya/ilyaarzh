@@ -1,56 +1,181 @@
 ---
-import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ProjectTile from '../components/ProjectTile.astro';
-import { getVideoThumbnail } from '../lib/video';
+import VideoEmbed from '../components/VideoEmbed.astro';
+import Media from '../components/Media.astro';
+import SocialIcons from '../components/SocialIcons.astro';
 import { site } from '../config/site';
 
-const projects = (await getCollection('projects', ({ data }) => !data.draft)).sort(
-  (a, b) => a.data.order - b.data.order,
-);
-
-// Without an explicit thumbnail, fall back to the cover of the project's first video.
-const tiles = await Promise.all(
-  projects.map(async (project) => ({
-    slug: project.id,
-    title: project.data.title,
-    fullTitle: project.data.fullTitle,
-    thumbnail:
-      project.data.thumbnail?.trim() ||
-      ((await getVideoThumbnail(project.data.videos[0]?.url)) ?? ''),
-    thumbnailPosition: project.data.thumbnailPosition,
-  })),
-);
+const { showreel, photo, intro, representedBy, contacts } = site.about;
+const telHref = (phone: string) => `tel:${phone.replace(/[^\d+]/g, '')}`;
 ---
 
 <BaseLayout>
-  <h1 class="visually-hidden">{site.name}</h1>
+  <div class="about">
+    <div class="block">
+      <div class="showreel">
+        <VideoEmbed url={showreel} title="Showreel" loop autostart />
+      </div>
+    </div>
 
-  <div class="capped">
-    <div class="grid">
-      {tiles.map((tile) => (
-        <ProjectTile
-          slug={tile.slug}
-          title={tile.title}
-          fullTitle={tile.fullTitle}
-          thumbnail={tile.thumbnail}
-          thumbnailPosition={tile.thumbnailPosition}
-        />
+    <div class:list={['block', 'intro', photo.trim() && 'with-photo']}>
+      {photo.trim() && (
+        <div class="portrait">
+          <Media src={photo} alt={intro.name} ratio="1/1" sizes="150px" />
+        </div>
+      )}
+      <div class="bio">
+        <h1>{intro.name}</h1>
+        {intro.bio.map((paragraph) => (
+          <p>{paragraph}</p>
+        ))}
+      </div>
+    </div>
+
+    {representedBy.show && (
+      <div class="block">
+        <h2 class="label">REPRESENTED BY</h2>
+        <div class="agency">
+          {representedBy.url ? (
+            <a
+              href={representedBy.url}
+              target="_blank"
+              rel="noopener"
+              aria-label={representedBy.name}
+            >
+              <Media
+                src={representedBy.logo}
+                alt={representedBy.name}
+                ratio="204/70"
+                sizes="204px"
+              />
+            </a>
+          ) : (
+            <Media src={representedBy.logo} alt={representedBy.name} ratio="204/70" sizes="204px" />
+          )}
+        </div>
+      </div>
+    )}
+
+    <div class="block">
+      <h2 class="label">CONTACT:</h2>
+      {contacts.map((contact) => (
+        <p class="contact">
+          <a href={`mailto:${contact.email}`}>{contact.email}</a>
+          <br />
+          <a href={telHref(contact.phone)}>{contact.phone}</a>
+        </p>
       ))}
+      <SocialIcons class="contact-socials" />
     </div>
   </div>
 </BaseLayout>
 
 <style>
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--gutter);
+  .about {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 4.8rem 0;
   }
 
-  @media (min-width: 681px) {
-    .grid {
-      grid-template-columns: repeat(3, 1fr);
+  .block {
+    padding: 2.4rem 3.2rem;
+  }
+
+  .block + .block {
+    margin-top: 3.2rem;
+  }
+
+  /* Full column width on phones; the 15% reduction only reads well on wide screens. */
+  .showreel {
+    width: 100%;
+    margin-inline: auto;
+  }
+
+  @media (min-width: 724px) {
+    .showreel {
+      width: 85%;
     }
+  }
+
+  .label {
+    font-size: var(--copy-size);
+    line-height: var(--copy-lh);
+    font-weight: 700;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--text);
+    margin: 0 0 1.6rem;
+  }
+
+  /* Phone: portrait above the text. From 724px: portrait left, text right. */
+  .intro {
+    display: grid;
+    gap: 3.2rem;
+  }
+
+  .portrait {
+    width: min(150px, 100%);
+    margin-inline: auto;
+  }
+
+  @media (min-width: 724px) {
+    /* The text column is only as wide as the text, so the pair can sit centred. */
+    .intro.with-photo {
+      grid-template-columns: 150px minmax(0, 52rem);
+      justify-content: center;
+      align-items: start;
+      gap: 4.8rem;
+    }
+
+    .portrait {
+      margin: 0;
+    }
+  }
+
+  .bio {
+    max-width: 52rem;
+  }
+
+  .bio h1 {
+    font-size: var(--h1-size);
+    font-weight: var(--h1-weight);
+    line-height: 1.2;
+    color: var(--title-color);
+    margin: 0 0 1.6rem;
+  }
+
+  .bio p {
+    font-size: var(--copy-size);
+    line-height: 1.6;
+    letter-spacing: var(--copy-ls);
+    color: var(--text);
+    margin: 0 0 1.2rem;
+  }
+
+  .bio p:last-child {
+    margin-bottom: 0;
+  }
+
+  .agency {
+    width: 204px;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+
+  .contact {
+    font-size: var(--copy-size);
+    line-height: var(--copy-lh);
+    text-align: center;
+    color: var(--text);
+    margin: 0 0 1.6rem;
+  }
+
+  .contact:last-child {
+    margin-bottom: 0;
+  }
+
+  :global(.socials.contact-socials) {
+    justify-content: center;
+    margin-top: 2.4rem;
   }
 </style>

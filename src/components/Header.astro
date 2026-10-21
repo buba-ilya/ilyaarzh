@@ -9,7 +9,9 @@ interface Props {
 const { current = Astro.url.pathname } = Astro.props;
 
 const isCurrent = (href: string) =>
-  href === '/' ? current === '/' || current.startsWith('/portfolio') : current.startsWith(href);
+  href === '/'
+    ? current === '/'
+    : current.startsWith(href) || (href === '/work' && current.startsWith('/portfolio'));
 ---
 
 <header>

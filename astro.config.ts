@@ -8,4 +8,6 @@ export default defineConfig({
   site: site.url,
   output: 'static',
   integrations: [sitemap()],
+  // ABOUT moved to the home page; keep old links working.
+  redirects: { '/about': '/' },
 });

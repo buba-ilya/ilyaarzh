@@ -4,7 +4,7 @@ import SocialIcons from './SocialIcons.astro';
 
 const year = new Date().getFullYear();
 // ABOUT shows the icons under the contacts, so the footer doesn't repeat them there.
-const onAbout = Astro.url.pathname.replace(/\/$/, '') === '/about';
+const onAbout = Astro.url.pathname === '/';
 ---
 
 <footer>

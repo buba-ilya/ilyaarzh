@@ -1,0 +1,56 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProjectTile from '../components/ProjectTile.astro';
+import { getVideoThumbnail } from '../lib/video';
+import { site } from '../config/site';
+
+const projects = (await getCollection('projects', ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+
+// Without an explicit thumbnail, fall back to the cover of the project's first video.
+const tiles = await Promise.all(
+  projects.map(async (project) => ({
+    slug: project.id,
+    title: project.data.title,
+    fullTitle: project.data.fullTitle,
+    thumbnail:
+      project.data.thumbnail?.trim() ||
+      ((await getVideoThumbnail(project.data.videos[0]?.url)) ?? ''),
+    thumbnailPosition: project.data.thumbnailPosition,
+  })),
+);
+---
+
+<BaseLayout title="WORK">
+  <h1 class="visually-hidden">{site.name}</h1>
+
+  <div class="capped">
+    <div class="grid">
+      {tiles.map((tile) => (
+        <ProjectTile
+          slug={tile.slug}
+          title={tile.title}
+          fullTitle={tile.fullTitle}
+          thumbnail={tile.thumbnail}
+          thumbnailPosition={tile.thumbnailPosition}
+        />
+      ))}
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--gutter);
+  }
+
+  @media (min-width: 681px) {
+    .grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

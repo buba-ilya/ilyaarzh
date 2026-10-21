@@ -1,6 +1,6 @@
 ---
-title: 'LOOMNITS CARPET'
-fullTitle: 'Loomnits carpet'
+title: 'LOOMKNITS CARPET'
+fullTitle: 'Loomknits carpet'
 order: 18
 thumbnail: ''
 videos:
