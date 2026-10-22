@@ -13,9 +13,11 @@ interface Props {
   title?: string;
   description?: string;
   ogImage?: string;
+  /** Skip the site header and footer, for standalone pages like /gaffer. */
+  bare?: boolean;
 }
 
-const { title, description = site.description, ogImage } = Astro.props;
+const { title, description = site.description, ogImage, bare = false } = Astro.props;
 
 const documentTitle = title ? `${title} - ${site.name}` : site.name;
 const canonical = new URL(Astro.url.pathname, Astro.site ?? site.url).href;
@@ -59,10 +61,10 @@ const umamiId = site.analytics.umamiWebsiteId.trim();
   </head>
 
   <body>
-    <Header />
+    {!bare && <Header />}
     <main>
       <slot />
     </main>
-    <Footer />
+    {!bare && <Footer />}
   </body>
 </html>
