@@ -28,6 +28,8 @@ const projects = defineCollection({
       .default([]),
     /** Up to 6 stills, 16:9. An empty string renders SOON. */
     stills: z.array(z.string()).default([]),
+    /** Keep every still in a single row at all screen sizes (e.g. vertical frames). */
+    stillsInRow: z.boolean().optional(),
     draft: z.boolean().optional(),
   }),
 });

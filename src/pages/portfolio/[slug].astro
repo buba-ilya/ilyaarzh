@@ -17,7 +17,7 @@ interface Props {
 }
 
 const { project } = Astro.props;
-const { title, fullTitle, videos, stills, thumbnail } = project.data;
+const { title, fullTitle, videos, stills, stillsInRow, thumbnail } = project.data;
 
 const { Content } = await render(project);
 const hasBody = (project.body ?? '').trim().length > 0;
@@ -41,7 +41,7 @@ const shareImage = thumbnail?.trim() || ((await getVideoThumbnail(videos[0]?.url
 
     {stills.length > 0 && (
       <div class="stills">
-        <StillsGrid stills={stills} title={title} />
+        <StillsGrid stills={stills} title={title} inRow={stillsInRow} />
       </div>
     )}
 

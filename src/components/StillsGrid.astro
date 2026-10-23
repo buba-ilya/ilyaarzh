@@ -5,12 +5,17 @@ import { mediaHref } from '../lib/media';
 interface Props {
   stills: string[];
   title: string;
+  /** Put all stills in one row regardless of screen width. */
+  inRow?: boolean;
 }
 
-const { stills, title } = Astro.props;
+const { stills, title, inRow = false } = Astro.props;
 ---
 
-<div class="stills-grid">
+<div
+  class:list={['stills-grid', inRow && 'in-row']}
+  style={inRow ? `--stills-count: ${stills.length}` : undefined}
+>
   {stills.map((src, i) => (
     <a
       class="still has-overlay"
@@ -60,5 +65,9 @@ const { stills, title } = Astro.props;
     .stills-grid {
       grid-template-columns: repeat(6, 1fr);
     }
+  }
+
+  .stills-grid.in-row {
+    grid-template-columns: repeat(var(--stills-count), 1fr);
   }
 </style>

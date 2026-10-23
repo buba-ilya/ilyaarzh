@@ -1,9 +1,8 @@
 ---
 title: 'OTRECHENIE'
 fullTitle: 'Short film "Otrechenie"'
-order: 10
-thumbnail: 'projects/otrechenie/still-6.jpg'
-thumbnailPosition: 'center 75%'
+order: 13
+thumbnail: 'projects/otrechenie/still-1.jpg'
 videos:
   - url: 'https://vimeo.com/1235843554'
     cover: ''
