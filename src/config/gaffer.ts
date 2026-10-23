@@ -2,22 +2,11 @@
 // Stills are paths in src/assets, e.g. 'gaffer/my-project/still-1.jpg'. The grid adapts
 // to how many there are (1–6); a portrait ratio puts them all in one row.
 
-export interface GafferProject {
-  title: string;
-  /** Small line under the title: format, director, DP. Empty -> hidden. */
-  credits: string;
-  /** Vimeo, YouTube or Instagram link; the button names the site. Empty -> hidden. */
-  link: string;
-  /** Up to 6 stills, all in the same frame shape. */
-  stills: string[];
-  /** Frame shape of the stills, e.g. '16/9' or '4/5'. Defaults to 16/9. */
-  ratio?: string;
-}
+import { stillsIn, type RolePage } from './role-page';
 
-const stills = (folder: string, count: number) =>
-  Array.from({ length: count }, (_, i) => `gaffer/${folder}/still-${i + 1}.jpg`);
+const stills = stillsIn('gaffer');
 
-export const gaffer = {
+export const gaffer: RolePage = {
   role: 'GAFFER',
   description: 'Ilya Arzhinovsky — gaffer',
 
@@ -68,5 +57,5 @@ export const gaffer = {
       link: 'https://youtu.be/Fd98BB42X2A',
       stills: stills('sudeal-mtv', 5),
     },
-  ] as GafferProject[],
+  ],
 };
