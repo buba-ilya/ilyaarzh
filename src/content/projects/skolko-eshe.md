@@ -8,7 +8,13 @@ videos:
     cover: ''
     title: ''
     ratio: '9/16'
-stills: []
+stills:
+  - 'projects/skolko-eshe/still-1.jpg'
+  - 'projects/skolko-eshe/still-2.jpg'
+  - 'projects/skolko-eshe/still-3.jpg'
+  - 'projects/skolko-eshe/still-4.jpg'
+  - 'projects/skolko-eshe/still-5.jpg'
+  - 'projects/skolko-eshe/still-6.jpg'
 draft: false
 ---
 
