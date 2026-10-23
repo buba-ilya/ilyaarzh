@@ -39,6 +39,8 @@ const projects = page.projects.map((p, i) => {
   const [w, h] = ratio.split('/').map(Number);
   const srcs = p.stills.map((s) => s.trim()).filter(Boolean).slice(0, 6);
   const spans = spansFor(srcs.length, h > w);
+  // Phones: three across even for portrait frames, which would be too thin in one row.
+  const phoneSpans = spansFor(srcs.length, false);
   // Height of the grid as a share of its width: add up the first still of each row.
   let gridHeight = 0;
   let filled = 0;
@@ -51,7 +53,7 @@ const projects = page.projects.map((p, i) => {
     ratio,
     gridHeight,
     number: String(i + 1).padStart(2, '0'),
-    stills: srcs.map((src, j) => ({ src, span: spans[j], index: offset++ })),
+    stills: srcs.map((src, j) => ({ src, span: spans[j], phoneSpan: phoneSpans[j], index: offset++ })),
   };
 });
 const allStills = projects.flatMap((p) => p.stills.map((s) => s.src));
@@ -86,19 +88,19 @@ const contact = site.about.contacts[0];
       </div>
 
       <div class="stills">
-        {p.stills.map(({ src, span, index }, i) => (
+        {p.stills.map(({ src, span, phoneSpan, index }, i) => (
           <a
             class="still"
             href={mediaHref(src)}
             data-lightbox-index={index}
             aria-label={`${p.title} — still ${i + 1}, open full screen`}
-            style={`--span:${span}`}
+            style={`--span:${span};--phone-span:${phoneSpan}`}
           >
             <Media
               src={src}
               alt={`${p.title} — still ${i + 1}`}
               ratio={p.ratio}
-              sizes={`(min-width: 681px) ${Math.round((span / 6) * 90)}vw, 50vw`}
+              sizes={`(min-width: 681px) ${Math.round((span / 6) * 90)}vw, ${Math.round((phoneSpan / 6) * 100)}vw`}
             />
           </a>
         ))}
@@ -252,17 +254,14 @@ const contact = site.about.contacts[0];
       gap: 1.6rem;
     }
 
-    /* Phones: plain two columns; an odd last still takes the full row. */
-    .stills {
-      grid-template-columns: repeat(2, 1fr);
+    /* Same size as the name and role at the top, so long titles fit on a line or two. */
+    .project-title {
+      font-size: var(--site-title-size);
     }
 
+    /* Phones: three across, portrait frames included. */
     .still {
-      grid-column: auto;
-    }
-
-    .still:last-child:nth-child(odd) {
-      grid-column: 1 / -1;
+      grid-column: span var(--phone-span, 2);
     }
 
     .bottom {
