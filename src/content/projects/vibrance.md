@@ -14,3 +14,8 @@ draft: false
 ---
 
 experimental
+
+director - danya komarov\
+dop - ilya arzhinovsky\
+producer - danya komarov\
+color - danya komarov

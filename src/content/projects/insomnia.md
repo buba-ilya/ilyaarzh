@@ -19,3 +19,7 @@ draft: false
 ---
 
 experimental
+
+director - yulia yazikova\
+dop - ilya arzhinovsky\
+color - ilya arzhinovsky

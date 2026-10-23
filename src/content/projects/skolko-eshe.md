@@ -20,3 +20,10 @@ draft: false
 ---
 
 music video
+
+produced by loadloudco\
+director - felix oganov\
+dop - ilya arzhinovsky\
+producer - rustam akimzhanov\
+prod. designer - polina safoshkina\
+color - ilya arzhinovsky

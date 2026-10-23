@@ -17,4 +17,9 @@ stills:
 draft: false
 ---
 
-film
+short film
+
+director - dmitriy simbirtsev\
+dop - ilya arzhinovsky\
+producer - andrey startsev\
+prod. design - polina bazanova

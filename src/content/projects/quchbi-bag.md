@@ -20,3 +20,7 @@ draft: false
 
 commercial\
 shot on 8mm film
+
+director - maria laurson\
+dop - ilya arzhinovsky\
+color - ilya arzhinovsky

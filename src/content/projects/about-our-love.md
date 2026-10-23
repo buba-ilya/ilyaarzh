@@ -21,3 +21,9 @@ draft: false
 
 experimental\
 shot on 8mm film
+
+director - maria laurson\
+dop - ilya arzhinovsky\
+producer - varya kuzmina\
+choreographer - igor firsov\
+color - ilya arzhinovsky

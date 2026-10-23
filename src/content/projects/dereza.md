@@ -19,3 +19,9 @@ draft: false
 ---
 
 music video
+
+director - lera farion\
+dop - ilya arzhinovsky\
+producer - maryana eliseeva\
+prod. designer - maria potekhina\
+color - ilya arzhinovsky

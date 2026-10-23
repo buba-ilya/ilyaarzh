@@ -17,4 +17,10 @@ stills:
 draft: false
 ---
 
-film
+short film
+
+director - lera farion\
+dop - ilya arzhinovsky\
+producer - artem kareev\
+prod. designer - polina safoshkina\
+color - ilya arzhinovsky

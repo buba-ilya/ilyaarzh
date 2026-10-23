@@ -18,3 +18,7 @@ draft: false
 ---
 
 doc
+
+director - maria laurson\
+dop - ilya arzhinovsky\
+producer - artem kareev
