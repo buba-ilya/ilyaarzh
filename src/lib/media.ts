@@ -14,6 +14,15 @@ export function resolveAsset(src?: string): ImageMetadata | undefined {
   return assets[key]?.default;
 }
 
+/** Every image in src/assets/<folder>/ (subfolders included), as content paths sorted by name. */
+export function assetsIn(folder: string): string[] {
+  const prefix = `/src/assets/${folder.replace(/^\/|\/$/g, '')}/`;
+  return Object.keys(assets)
+    .filter((key) => key.startsWith(prefix))
+    .map((key) => key.slice('/src/assets/'.length))
+    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+}
+
 /**
  * Link target for a still. The lightbox intercepts the click, so this only matters
  * for middle-click, "open in new tab" and browsing without JavaScript — but it has to

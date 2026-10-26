@@ -1,0 +1,372 @@
+---
+// PHOTO page at /photo: one block per series, either an even gallery or photos scattered
+// across the page, one or two to a row.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Media from '../components/Media.astro';
+import Lightbox from '../components/Lightbox.astro';
+import SocialIcons from '../components/SocialIcons.astro';
+import { site } from '../config/site';
+import { photo } from '../config/photo';
+import { assetsIn, mediaHref, resolveAsset } from '../lib/media';
+
+/** Random numbers seeded by the file name, so each photo keeps its place between builds. */
+const seeded = (key: string) => {
+  let h = 2166136261;
+  for (const ch of key) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
+  return () => {
+    h = Math.imul(h ^ (h >>> 15), h | 1);
+    h ^= h + Math.imul(h ^ (h >>> 7), h | 61);
+    return ((h ^ (h >>> 14)) >>> 0) / 4294967296;
+  };
+};
+const between = (rnd: () => number, min: number, max: number) => min + rnd() * (max - min);
+const pct = (n: number) => `${n.toFixed(2)}%`;
+
+const aligns = ['flex-start', 'center', 'flex-end'];
+
+type Row = { gap: number; shots: { src: string; index: number; portrait: boolean; style: string }[] };
+
+let offset = 0;
+const series = photo.series.map((s, i) => {
+  const srcs = assetsIn(`photo/${s.folder}`);
+  const number = String(i + 1).padStart(2, '0');
+
+  // Gallery: rows of equal height, each photo as wide as its proportions ask.
+  if (s.layout === 'gallery') {
+    const gallery = srcs.map((src) => {
+      const meta = resolveAsset(src);
+      const ratio = meta ? meta.width / meta.height : 3 / 2;
+      return { src, index: offset++, ratio, frame: meta ? `${meta.width}/${meta.height}` : '3/2' };
+    });
+    return { ...s, number, rows: [] as Row[], gallery, count: srcs.length };
+  }
+
+  const rows: Row[] = [];
+  for (let k = 0; k < srcs.length; ) {
+    const rowRnd = seeded(`${srcs[k]}#row`);
+    // Pairs most of the time; a lone photo now and then gives the page some air.
+    const size = k + 1 < srcs.length && rowRnd() < 0.6 ? 2 : 1;
+    const items = srcs.slice(k, k + size).map((src) => {
+      const meta = resolveAsset(src);
+      const portrait = meta ? meta.height > meta.width : false;
+      const rnd = seeded(src);
+      const w =
+        (size === 1 ? between(rnd, 38, 58) : between(rnd, 30, 44)) * (portrait ? 0.72 : 1);
+      // Phones: one per line, wide, pushed left or right.
+      const pw = portrait ? between(rnd, 62, 85) : between(rnd, 75, 100);
+      return {
+        src,
+        portrait,
+        w,
+        pw,
+        pml: rnd() * (100 - pw),
+        pgap: between(rnd, 2.4, 6.4),
+        align: aligns[Math.floor(rnd() * aligns.length)],
+      };
+    });
+
+    // Split the free width into random gaps around (and between) the photos.
+    const free = 100 - items.reduce((sum, it) => sum + it.w, 0);
+    let margins: number[];
+    if (items.length === 1) {
+      margins = [rowRnd() * free];
+    } else {
+      const mid = between(rowRnd, 0.15, 0.6) * free;
+      margins = [rowRnd() * (free - mid), mid];
+    }
+    const gap = k === 0 ? 0 : between(rowRnd, 4, 14);
+
+    rows.push({
+      gap,
+      shots: items.map((it, j) => ({
+        src: it.src,
+        portrait: it.portrait,
+        index: offset++,
+        style: [
+          `--w:${pct(it.w)}`,
+          `--ml:${pct(margins[j])}`,
+          `--align:${it.align}`,
+          `--pw:${pct(it.pw)}`,
+          `--pml:${pct(it.pml)}`,
+          `--pmt:${k + j === 0 ? 0 : it.pgap.toFixed(2)}rem`,
+        ].join(';'),
+      })),
+    });
+    k += size;
+  }
+
+  return { ...s, number, rows, gallery: [], count: srcs.length };
+});
+
+const allPhotos = series.flatMap((s) => [
+  ...s.gallery.map((p) => p.src),
+  ...s.rows.flatMap((r) => r.shots).map((p) => p.src),
+]);
+const contact = site.about.contacts[0];
+---
+
+<BaseLayout title={photo.role} description={photo.description} bare>
+  <header class="top">
+    <h1 class="brand">
+      <span class="brand-name">{site.name}</span>
+      <span class="brand-role">{photo.role}</span>
+    </h1>
+  </header>
+
+  {series.filter((s) => s.count > 0).map((s) => (
+    <section class="series" aria-labelledby={`s-${s.number}`}>
+      <div class="series-head">
+        <p class="series-number">{s.number}</p>
+        <h2 class="series-title" id={`s-${s.number}`}>{s.title}</h2>
+        {s.credits.trim() && <p class="series-credits">{s.credits}</p>}
+      </div>
+
+      {s.gallery.length > 0 && (
+        <div class="gallery">
+          {s.gallery.map(({ src, index, ratio, frame }) => (
+            <a
+              class="tile"
+              href={mediaHref(src)}
+              data-lightbox-index={index}
+              aria-label={`${s.title} — photo ${index + 1}, open full screen`}
+              style={`--r:${ratio.toFixed(4)}`}
+            >
+              <Media
+                src={src}
+                alt={`${s.title} — photo`}
+                ratio={frame}
+                sizes={`(min-width: 681px) ${Math.round(ratio * 25)}vw, ${Math.round(ratio * 50)}vw`}
+              />
+            </a>
+          ))}
+        </div>
+      )}
+
+      <div class="scatter">
+        {s.rows.map((row) => (
+          <div class="row" style={`--gap:${row.gap.toFixed(2)}rem`}>
+            {row.shots.map(({ src, index, portrait, style }) => (
+              <a
+                class="shot"
+                href={mediaHref(src)}
+                data-lightbox-index={index}
+                aria-label={`${s.title} — photo ${index + 1}, open full screen`}
+                style={style}
+              >
+                <Media
+                  src={src}
+                  alt={`${s.title} — photo`}
+                  ratio="auto"
+                  sizes={`(min-width: 681px) ${portrait ? 35 : 50}vw, 100vw`}
+                />
+              </a>
+            ))}
+          </div>
+        ))}
+      </div>
+    </section>
+  ))}
+
+  <footer class="bottom">
+    {contact && (
+      <p class="contacts">
+        <a href={`mailto:${contact.email}`}>{contact.email}</a>
+        <a href={`tel:${contact.phone.replace(/\s+/g, '')}`}>{contact.phone}</a>
+      </p>
+    )}
+    <SocialIcons />
+  </footer>
+
+  {allPhotos.length > 0 && <Lightbox items={allPhotos} title={`${site.name} — ${photo.role}`} />}
+
+  {/* New order on every visit. Inline, so it runs while the page parses: before the first
+      paint and before the lightbox script, which then pages through the shuffled order. */}
+  <script is:inline>
+    (() => {
+      const shuffle = (list) => {
+        for (let i = list.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [list[i], list[j]] = [list[j], list[i]];
+        }
+        return list;
+      };
+      const stage = document.querySelector('[data-lightbox] [data-stage]');
+      const slides = stage ? Array.from(stage.querySelectorAll('[data-slide]')) : [];
+      let next = 0;
+      document.querySelectorAll('.gallery').forEach((gallery) => {
+        shuffle(Array.from(gallery.querySelectorAll('.tile'))).forEach((tile) => {
+          const slide = slides[Number(tile.dataset.lightboxIndex)];
+          gallery.appendChild(tile);
+          if (slide) stage.appendChild(slide);
+          tile.dataset.lightboxIndex = String(next++);
+        });
+      });
+    })();
+  </script>
+</BaseLayout>
+
+<style>
+  /* Same header as /gaffer and /colorist: name and role top left. */
+  .top {
+    padding: 3.2rem;
+  }
+
+  .brand {
+    margin: 0;
+    font-weight: 400;
+    color: #fff;
+  }
+
+  .brand-name,
+  .brand-role {
+    display: block;
+    font-size: var(--site-title-size);
+    line-height: var(--site-title-lh);
+  }
+
+  .series {
+    padding: 2.4rem 3.2rem 12rem;
+  }
+
+  .series-head,
+  .gallery,
+  .scatter {
+    max-width: 1400px;
+    margin-inline: auto;
+  }
+
+  .series-head {
+    margin-bottom: 4.8rem;
+    color: #fff;
+  }
+
+  .series-number {
+    margin: 0 0 0.4rem;
+    font-size: var(--copy-size);
+    color: #777;
+    letter-spacing: 0.1em;
+  }
+
+  .series-title {
+    margin: 0;
+    font-size: var(--h1-size);
+    font-weight: var(--h1-weight);
+    line-height: 1.2;
+  }
+
+  .series-credits {
+    margin: 0.6rem 0 0;
+    font-size: var(--copy-size);
+    line-height: var(--copy-lh);
+    letter-spacing: var(--copy-ls);
+    color: var(--text);
+  }
+
+  /* Justified rows: every photo grows from the same height, so a row fills the width
+     without cropping. The spacer keeps the last, short row from stretching. */
+  .gallery {
+    --row-h: clamp(16rem, 20vw, 32rem);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .gallery::after {
+    content: '';
+    flex-grow: 999;
+  }
+
+  .tile {
+    display: block;
+    flex: var(--r) 1 calc(var(--r) * var(--row-h));
+    /* A photo left alone on a row grows only so far, so it does not fill the screen. */
+    max-width: calc(var(--r) * var(--row-h) * 1.8);
+    cursor: zoom-in;
+    transition: opacity 0.25s ease-in-out;
+  }
+
+  .row {
+    display: flex;
+    margin-top: var(--gap, 0);
+  }
+
+  .shot {
+    display: block;
+    flex: none;
+    width: var(--w);
+    margin-left: var(--ml);
+    align-self: var(--align);
+    cursor: zoom-in;
+    transition: opacity 0.25s ease-in-out;
+  }
+
+  @media (hover: hover) {
+    .tile:hover,
+    .shot:hover {
+      opacity: 0.75;
+    }
+  }
+
+  .bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1.6rem;
+    padding: 0 3.2rem 4rem;
+  }
+
+  .contacts {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.4rem;
+    margin: 0;
+    font-size: var(--copy-size);
+    line-height: var(--copy-lh);
+    letter-spacing: var(--copy-ls);
+  }
+
+  @media (max-width: 680px) {
+    .top {
+      padding: 2rem;
+    }
+
+    .series {
+      padding: 2rem 2rem 8rem;
+    }
+
+    .series-head {
+      margin-bottom: 3.2rem;
+    }
+
+    .series-title {
+      font-size: var(--site-title-size);
+    }
+
+    .gallery {
+      --row-h: 13rem;
+      gap: 4px;
+    }
+
+    /* Narrow screens often leave a landscape photo alone on its row: let it fill it. */
+    .tile {
+      max-width: calc(var(--r) * var(--row-h) * 2.6);
+    }
+
+    /* Phones: one photo per line, at its own width and side. */
+    .row {
+      display: block;
+      margin-top: 0;
+    }
+
+    .shot {
+      width: var(--pw);
+      margin-left: var(--pml);
+      margin-top: var(--pmt);
+    }
+
+    .bottom {
+      padding: 0 2rem 4rem;
+    }
+  }
+</style>
