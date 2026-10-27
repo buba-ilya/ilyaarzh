@@ -8,10 +8,15 @@ interface Props {
 
 const { current = Astro.url.pathname } = Astro.props;
 
-const isCurrent = (href: string) =>
+const matches = (href: string) =>
   href === '/'
     ? current === '/'
-    : current.startsWith(href) || (href === '/work' && current.startsWith('/portfolio'));
+    : href !== '' &&
+      (current.startsWith(href) || (href === '/work' && current.startsWith('/portfolio')));
+
+// A parent counts as current when one of its pages is open.
+const isCurrent = (item: (typeof site.nav)[number]) =>
+  matches(item.href) || (item.children ?? []).some((child) => matches(child.href));
 ---
 
 <header>
@@ -25,16 +30,29 @@ const isCurrent = (href: string) =>
       <ul class="menu">
         {site.nav.map((item) => (
           <li class:list={['menu-item', item.children?.length && 'has-children']}>
-            <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>
-              {item.label}
-            </a>
+            {item.href ? (
+              <a href={item.href} aria-current={isCurrent(item) ? 'page' : undefined}>
+                {item.label}
+              </a>
+            ) : (
+              <button
+                type="button"
+                class="toggle"
+                aria-expanded="false"
+                data-current={isCurrent(item) ? '' : undefined}
+              >
+                {item.label}
+              </button>
+            )}
 
             {item.children && item.children.length > 0 && (
               <div class="sub-menu">
                 <ul>
                   {item.children.map((child) => (
                     <li>
-                      <a href={child.href}>{child.label}</a>
+                      <a href={child.href} aria-current={matches(child.href) ? 'page' : undefined}>
+                        {child.label}
+                      </a>
                     </li>
                   ))}
                 </ul>
@@ -46,6 +64,27 @@ const isCurrent = (href: string) =>
     </nav>
   </div>
 </header>
+
+<script>
+  // Tap to open a menu without its own page (MORE); tap anywhere else to close it.
+  const toggles = document.querySelectorAll<HTMLButtonElement>('header .toggle');
+  const close = (except?: HTMLButtonElement) =>
+    toggles.forEach((t) => {
+      if (t !== except) t.setAttribute('aria-expanded', 'false');
+    });
+  toggles.forEach((toggle) =>
+    toggle.addEventListener('click', (event) => {
+      event.stopPropagation();
+      close(toggle);
+      const open = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!open));
+    }),
+  );
+  document.addEventListener('click', () => close());
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') close();
+  });
+</script>
 
 <style>
   header {
@@ -100,7 +139,8 @@ const isCurrent = (href: string) =>
     margin-left: 0;
   }
 
-  .menu-item > a {
+  .menu-item > a,
+  .toggle {
     font-size: var(--menu-size);
     line-height: var(--menu-lh);
     color: #fff;
@@ -110,25 +150,43 @@ const isCurrent = (href: string) =>
     color: #dedede;
   }
 
-  /* Dropdown: rendered only when a nav item declares children. */
-  .sub-menu {
-    display: none;
+  /* MORE: a step back from WORK and ABOUT. */
+  .toggle {
+    font-family: inherit;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    color: #8a8a8a;
   }
 
-  @media (min-width: 960px) {
-    .sub-menu {
-      display: block;
-      position: absolute;
-      top: 70%;
-      left: -3.2rem;
-      padding-top: 1.6rem;
-      opacity: 0;
-      visibility: hidden;
-      transition:
-        all 0.3s ease-in-out,
-        visibility 0s linear 0.3s;
-    }
+  .toggle:hover,
+  .toggle[aria-expanded='true'],
+  .toggle[data-current] {
+    color: #fff;
+  }
 
+  /* Dropdown: opens on hover where there is one, and on tap via the toggle script. */
+  .sub-menu {
+    position: absolute;
+    top: 70%;
+    right: -3.2rem;
+    padding-top: 1.2rem;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      all 0.3s ease-in-out,
+      visibility 0s linear 0.3s;
+  }
+
+  .toggle[aria-expanded='true'] + .sub-menu {
+    top: 100%;
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
+  }
+
+  @media (hover: hover) {
     .has-children:hover .sub-menu,
     .has-children:focus-within .sub-menu {
       top: 100%;
@@ -136,34 +194,30 @@ const isCurrent = (href: string) =>
       visibility: visible;
       transition-delay: 0s;
     }
+  }
 
-    .sub-menu ul {
-      position: relative;
-      list-style: none;
-      margin: 0;
-      padding: 1px 3.2rem;
-      background: #000;
-      white-space: nowrap;
-    }
+  .sub-menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 0.4rem 3.2rem;
+    background: #000;
+    white-space: nowrap;
+    text-align: right;
+  }
 
-    .sub-menu ul::after {
-      content: '';
-      position: absolute;
-      bottom: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      border: 6px solid transparent;
-      border-bottom-color: #000;
-    }
+  .sub-menu li {
+    padding: 0.8rem 0;
+  }
 
-    .sub-menu li {
-      padding: 1.2rem 0;
-    }
+  .sub-menu a {
+    font-size: var(--menu-size);
+    line-height: var(--menu-lh);
+    color: #fff;
+  }
 
-    .sub-menu a {
-      font-size: var(--menu-size);
-      line-height: var(--menu-lh);
-    }
+  .sub-menu a:hover,
+  .sub-menu a[aria-current='page'] {
+    color: #8a8a8a;
   }
 
   @media (max-width: 399px) {
@@ -177,6 +231,14 @@ const isCurrent = (href: string) =>
 
     .menu-item {
       margin-left: 2rem;
+    }
+
+    .sub-menu {
+      right: -2rem;
+    }
+
+    .sub-menu ul {
+      padding: 0.4rem 2rem;
     }
   }
 </style>

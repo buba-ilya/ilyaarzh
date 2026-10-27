@@ -4,7 +4,6 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Media from '../components/Media.astro';
 import Lightbox from '../components/Lightbox.astro';
-import SocialIcons from '../components/SocialIcons.astro';
 import { site } from '../config/site';
 import { photo } from '../config/photo';
 import { assetsIn, mediaHref, resolveAsset } from '../lib/media';
@@ -105,12 +104,9 @@ const allPhotos = series.flatMap((s) => [
 const contact = site.about.contacts[0];
 ---
 
-<BaseLayout title={photo.role} description={photo.description} bare>
+<BaseLayout title={photo.role} description={photo.description}>
   <header class="top">
-    <h1 class="brand">
-      <span class="brand-name">{site.name}</span>
-      <span class="brand-role">{photo.role}</span>
-    </h1>
+    <h1 class="page-title">{photo.role}</h1>
   </header>
 
   {series.filter((s) => s.count > 0).map((s) => (
@@ -174,7 +170,6 @@ const contact = site.about.contacts[0];
         <a href={`tel:${contact.phone.replace(/\s+/g, '')}`}>{contact.phone}</a>
       </p>
     )}
-    <SocialIcons />
   </footer>
 
   {allPhotos.length > 0 && <Lightbox items={allPhotos} title={`${site.name} — ${photo.role}`} />}
@@ -206,22 +201,16 @@ const contact = site.about.contacts[0];
 </BaseLayout>
 
 <style>
-  /* Same header as /gaffer and /colorist: name and role top left. */
   .top {
-    padding: 3.2rem;
+    padding: 3.2rem 3.2rem 0;
   }
 
-  .brand {
+  .page-title {
     margin: 0;
-    font-weight: 400;
-    color: #fff;
-  }
-
-  .brand-name,
-  .brand-role {
-    display: block;
-    font-size: var(--site-title-size);
-    line-height: var(--site-title-lh);
+    font-size: var(--h1-size);
+    font-weight: var(--h1-weight);
+    line-height: var(--h1-lh);
+    color: var(--title-color);
   }
 
   .series {
@@ -328,7 +317,7 @@ const contact = site.about.contacts[0];
 
   @media (max-width: 680px) {
     .top {
-      padding: 2rem;
+      padding: 2rem 2rem 0;
     }
 
     .series {

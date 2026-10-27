@@ -1,9 +1,8 @@
 ---
-// One standalone page per side role (/gaffer, /colorist): the same layout, fed by a config.
+// One page per side role (/gaffer, /colorist), under the MORE menu: the same layout, fed by a config.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Media from './Media.astro';
 import Lightbox from './Lightbox.astro';
-import SocialIcons from './SocialIcons.astro';
 import { site } from '../config/site';
 import type { RolePage } from '../config/role-page';
 import { mediaHref } from '../lib/media';
@@ -60,12 +59,9 @@ const allStills = projects.flatMap((p) => p.stills.map((s) => s.src));
 const contact = site.about.contacts[0];
 ---
 
-<BaseLayout title={page.role} description={page.description} bare>
+<BaseLayout title={page.role} description={page.description}>
   <header class="top">
-    <h1 class="brand">
-      <span class="brand-name">{site.name}</span>
-      <span class="brand-role">{page.role}</span>
-    </h1>
+    <h1 class="page-title">{page.role}</h1>
   </header>
 
   {projects.map((p) => (
@@ -115,34 +111,22 @@ const contact = site.about.contacts[0];
         <a href={`tel:${contact.phone.replace(/\s+/g, '')}`}>{contact.phone}</a>
       </p>
     )}
-    <SocialIcons />
   </footer>
 
   {allStills.length > 0 && <Lightbox items={allStills} title={`${site.name} — ${page.role}`} />}
 </BaseLayout>
 
 <style>
-  /* Same header as the cinematographer site: name and role top left. */
   .top {
-    padding: 3.2rem;
+    padding: 3.2rem 3.2rem 0;
   }
 
-  .brand {
+  .page-title {
     margin: 0;
-    font-weight: 400;
-    color: #fff;
-  }
-
-  .brand-name,
-  .brand-role {
-    display: block;
-  }
-
-  /* Role set as large as the name: on this page it is the point. */
-  .brand-name,
-  .brand-role {
-    font-size: var(--site-title-size);
-    line-height: var(--site-title-lh);
+    font-size: var(--h1-size);
+    font-weight: var(--h1-weight);
+    line-height: var(--h1-lh);
+    color: var(--title-color);
   }
 
   .project {
@@ -236,7 +220,7 @@ const contact = site.about.contacts[0];
 
   @media (max-width: 680px) {
     .top {
-      padding: 2rem;
+      padding: 2rem 2rem 0;
     }
 
     .project {
